@@ -15,7 +15,7 @@
 
   <main class="col" id="col">
     <header class="who reveal" style="--i:0">
-      <div class="ava"><img id="ava" src="icon.png" alt=""><i class="dot s-offline" id="dot"></i></div>
+      <div class="ava"><img id="ava" src="icon.png" alt=""><img class="deco" id="deco" alt="" hidden><i class="dot s-offline" id="dot"></i></div>
       <div class="who-text">
         <span id="handle">Noting</span>
         <span id="statusText">Connecting</span>
@@ -76,7 +76,7 @@ const nameEl = $('name');
 function setName(raw) {
   console.log('Discord name:', raw, [...(raw || '')].map(c => c.codePointAt(0).toString(16)));
   const clean = (raw || '').replace(/[\p{Cf}\u2800]/gu, '').replace(/\s+/g, ' ').trim();
-  const n = clean && /^[\x20-\x7E]+$/.test(clean) ? clean : CONFIG.fallbackName;
+  const n = clean && /^[\x20-\x7E]+$/.test(clean) && /[A-Za-z0-9]/.test(clean) ? clean : CONFIG.fallbackName;
   nameEl.textContent = n; nameEl.dataset.text = n;
   const w = Math.min($('col').clientWidth - 8, 520);
   nameEl.style.setProperty('--fs', Math.max(44, Math.min(132, w / (n.length * .5))) + 'px');
@@ -88,7 +88,9 @@ function render(d) {
   S = d;
   const u = d.discord_user || {};
   setName(u.global_name || u.username || CONFIG.fallbackName);
-  if (u.avatar) $('ava').src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${u.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`;
+  const dec = u.avatar_decoration_data;
+  $('deco').hidden = !dec;
+  if (dec) $('deco').src = `https://cdn.discordapp.com/avatar-decoration-presets/${dec.asset}.png?size=240`;
   if (u.username) $('handle').textContent = '@' + u.username;
   const st = d.discord_status || 'offline';
   $('dot').className = 'dot s-' + st;
@@ -165,7 +167,6 @@ document.querySelectorAll('a, button, input').forEach(el => {
   el.addEventListener('pointerenter', () => ring.classList.add('big'));
   el.addEventListener('pointerleave', () => ring.classList.remove('big'));
 });
-// กันเมาส์กลางเปิดโหมดเลื่อนอัตโนมัติ และไม่มีเอฟเฟกต์ตอนกด
 addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });
 addEventListener('resize', () => setName(nameEl.dataset.text));
 </script>
