@@ -7,7 +7,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ---------- ฉากหลัง ---------- */
+/* ---------- Background ---------- */
 .bg {
   position: fixed; inset: -30px; z-index: -3;
   background: #000 url('wallpaper.jpg') 88% center / cover no-repeat;
@@ -15,7 +15,7 @@ body {
   translate: calc(var(--dx) * -18px) calc(var(--dy) * -12px);
   transition: translate .3s ease-out;
 }
-.halftone {                       /* จุดสกรีนโทนมังงะ โผล่เฉพาะรอบเมาส์ */
+.halftone {                       /* the mouse cursor */
   position: fixed; inset: 0; z-index: 30; pointer-events: none;
   background: radial-gradient(#fff 1.3px, transparent 1.7px) 0 0 / 7px 7px;
   opacity: .3; mix-blend-mode: screen;
@@ -29,7 +29,7 @@ body {
 }
 @keyframes grain { 0%{transform:translate(0,0)} 25%{transform:translate(-40px,30px)} 50%{transform:translate(30px,-50px)} 75%{transform:translate(-60px,-20px)} 100%{transform:translate(0,0)} }
 
-/* ---------- หน้าคลิกเข้า ---------- */
+/* ---------- Click-through page ---------- */
 #gate {
   position: fixed; inset: 0; z-index: 200; background: #000; cursor: pointer;
   display: grid; place-items: center; transition: opacity .8s, visibility .8s;
@@ -38,7 +38,7 @@ body {
 #gate.open { opacity: 0; visibility: hidden; }
 @keyframes blink { 50% { opacity: .15; } }
 
-/* ---------- คอลัมน์หลัก (ซ้าย ปล่อยหน้าคนไว้ขวา) ---------- */
+/* ---------- Main Column ---------- */
 .col {
   width: min(540px, 100%); min-height: 100vh;
   margin-left: clamp(0px, 7vw, 120px); padding: 40px 24px 100px;
@@ -51,10 +51,11 @@ body {
 }
 body.in .reveal { opacity: 1; transform: none; }
 
-/* ---------- ส่วนหัว ---------- */
+/* ---------- Header ---------- */
 .who { display: flex; align-items: center; gap: 14px; }
 .ava { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
 .ava img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid #fff; filter: grayscale(1) contrast(1.1); background: #000; }
+.ava .deco { position: absolute; left: -10%; top: -10%; width: 120%; height: 120%; border: 0; border-radius: 0; background: none; filter: none; pointer-events: none; z-index: 3; }
 .who-text { display: flex; flex-direction: column; gap: 2px; font-size: 13px; min-width: 0; }
 #handle { font-weight: 700; }
 #statusText { color: rgba(255,255,255,.65); font-size: 12px; }
@@ -69,7 +70,7 @@ body.in .reveal { opacity: 1; transform: none; }
 .s-online { animation: pulse 2s infinite; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 1.5px #fff, 0 0 0 1.5px rgba(255,255,255,.7); } 100% { box-shadow: 0 0 0 1.5px #fff, 0 0 0 10px rgba(255,255,255,0); } }
 
-/* ---------- ชื่อยักษ์: เส้นขอบ + เติมขาวรอบเมาส์ ---------- */
+/* ---------- Name of the Giant ---------- */
 .name {
   position: relative; margin: 0; padding-right: 4px;
   font: 400 var(--fs, 120px)/.95 'Anton', Impact, sans-serif; text-transform: uppercase; letter-spacing: .02em;
@@ -83,12 +84,12 @@ body.in .reveal { opacity: 1; transform: none; }
           mask-image: radial-gradient(circle 130px at var(--hx, -999px) var(--hy, -999px), #000 0, transparent 100%);
 }
 
-/* ---------- คำพูดแบบบับเบิลมังงะ ---------- */
+/* ---------- Manga-style speech bubbles ---------- */
 .bubble { position: relative; align-self: flex-start; background: #fff; color: #000; padding: 10px 20px; border-radius: 22px 22px 22px 4px; }
 .bubble::before { content: ""; position: absolute; top: -13px; left: 26px; width: 20px; height: 14px; background: #fff; clip-path: polygon(0 100%, 100% 100%, 0 0); }
 .bubble p { margin: 0; font-weight: 700; font-size: 14px; }
 
-/* ---------- ช่อง Now (ใช้ภาพดาบเป็นฉากหลัง) ---------- */
+/* ---------- Now Channel ---------- */
 .panel {
   position: relative; display: flex; gap: 14px; align-items: center; min-height: 92px; padding: 14px 16px; overflow: hidden;
   border: 2px solid #fff; background: linear-gradient(90deg, #000 45%, rgba(0,0,0,.35)), #000 url('wallpapers.jpg') right center / cover;
@@ -108,7 +109,7 @@ body.in .reveal { opacity: 1; transform: none; }
 .bar { height: 3px; background: rgba(255,255,255,.25); margin-top: 8px; }
 .bar i { display: block; height: 100%; width: 0; background: #fff; }
 
-/* ---------- โซเชียล ---------- */
+/* ---------- Social Media ---------- */
 .socials { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
 .tile {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 66px;
@@ -126,7 +127,7 @@ body.in .reveal { opacity: 1; transform: none; }
 button.pill { cursor: pointer; transition: background .15s, color .15s; }
 button.pill:hover { background: #fff; color: #000; } button.pill:hover img { filter: invert(1); }
 
-/* ---------- เครื่องเล่นเพลง ---------- */
+/* ---------- Music player ---------- */
 .player {
   position: fixed; right: 20px; bottom: 20px; width: 262px; z-index: 60;
   display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; padding: 12px 14px;
@@ -146,7 +147,7 @@ input[type=range] { -webkit-appearance: none; appearance: none; height: 3px; bac
 input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: #fff; border-radius: 50%; }
 input[type=range]::-moz-range-thumb { width: 10px; height: 10px; border: 0; background: #fff; border-radius: 50%; }
 
-/* ---------- เคอร์เซอร์ + คลื่นคลิก + สั่น ---------- */
+/* ---------- Cursor + Click Wave + Vibration ---------- */
 .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 100; mix-blend-mode: difference; border-radius: 50%; display: none; }
 .cursor-dot { width: 6px; height: 6px; background: #fff; margin: -3px 0 0 -3px; }
 .cursor-ring { width: 38px; height: 38px; border: 1.5px solid #fff; margin: -19px 0 0 -19px; transition: width .25s, height .25s, margin .25s, background .25s; }
