@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOID</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="st.css">
+</head>
+<body>
+  <div id="gate"><p>click to enter</p></div>
+  <div class="bg"></div><div class="halftone"></div><div class="grain"></div>
+  <div class="cursor-ring"></div><div class="cursor-dot"></div>
+
+  <main class="col" id="col">
+    <header class="who reveal" style="--i:0">
+      <div class="ava"><img id="ava" src="icon.png" alt=""><i class="dot s-offline" id="dot"></i></div>
+      <div class="who-text">
+        <span id="handle">Noting</span>
+        <span id="statusText">Connecting</span>
+        <span id="custom"></span>
+      </div>
+    </header>
+
+    <h1 class="name reveal" id="name" data-text="VOID" style="--i:1">VOID</h1>
+
+    <div class="bubble reveal" style="--i:2"><p>Please dont swat me</p></div>
+
+    <section class="panel now reveal" style="--i:3">
+      <img id="art" alt="" hidden>
+      <div class="now-text">
+        <p id="nowVerb"></p>
+        <p id="nowTitle"></p>
+        <p id="nowSub"></p>
+        <div class="bar" id="bar" hidden><i id="barFill"></i></div>
+        <p id="nowTime"></p>
+      </div>
+    </section>
+
+    <nav class="socials reveal" id="socials" style="--i:4"></nav>
+
+  </main>
+
+  <aside class="player" id="player">
+    <audio id="audio" src="music.mp3" loop></audio>
+    <button class="play" id="playBtn" type="button" aria-label="Play/Pause"><img id="playIcon" src="https://api.iconify.design/lucide:play.svg?color=white" alt=""></button>
+    <div class="track">
+      <div class="title"><b>Noting</b><span class="eq"><i></i><i></i><i></i></span></div>
+      <div class="from">from me</div>
+      <div class="time-row"><span id="time">0:00</span><input type="range" id="seek" min="0" max="100" value="0"></div>
+    </div>
+    <div class="vol"><img src="https://api.iconify.design/lucide:volume-1.svg?color=white" alt=""><input type="range" id="vol" min="0" max="1" step="0.01" value="0.7"></div>
+  </aside>
+
+<script>
+const CONFIG = {
+  discordId: '975297395443249162',
+  fallbackName: 'Void',
+  socials: [
+    { name: 'Discord',   icon: 'discord',   url: '#' },
+    { name: 'TikTok',    icon: 'tiktok',    url: 'https://www.tiktok.com/@userpfur76ibyy' },
+    { name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/w.v01d/?__pwa=1' },
+    { name: 'Roblox',    icon: 'roblox',    url: 'https://www.roblox.com/th/users/5804038315/profile' },
+    { name: 'Spotify',   icon: 'spotify',   url: 'https://open.spotify.com/user/31xmdfnkmjyv5vonbxqqxnwxtg2a?si=c60fef5f035a48ec' },
+    { name: 'DCM',       icon: 'discord',   url: 'https://liable-amaranth-pj2zuyyx.edgeone.dev/' },
+  ]
+};
+const $ = id => document.getElementById(id);
+const root = document.documentElement;
+const icon = n => `https://api.iconify.design/lucide:${n}.svg?color=white`;
+const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${x}` : `${m}:${x}`; };
+$('socials').innerHTML = CONFIG.socials.map(s =>
+  `<a class="tile" href="${s.url}" target="_blank" rel="noopener" title="${s.name}"><img src="https://api.iconify.design/simple-icons:${s.icon}.svg?color=white" alt=""><span>${s.name}</span></a>`).join('');
+const nameEl = $('name');
+function setName(raw) {
+  console.log('Discord name:', raw, [...(raw || '')].map(c => c.codePointAt(0).toString(16)));
+  const clean = (raw || '').replace(/[\p{Cf}\u2800]/gu, '').replace(/\s+/g, ' ').trim();
+  const n = clean && /^[\x20-\x7E]+$/.test(clean) ? clean : CONFIG.fallbackName;
+  nameEl.textContent = n; nameEl.dataset.text = n;
+  const w = Math.min($('col').clientWidth - 8, 520);
+  nameEl.style.setProperty('--fs', Math.max(44, Math.min(132, w / (n.length * .5))) + 'px');
+}
+setName(CONFIG.fallbackName);
+let S = null;
+const LABEL = { online: 'Online', idle: 'Idle', dnd: 'Do not disturb', offline: 'Offline' };
+function render(d) {
+  S = d;
+  const u = d.discord_user || {};
+  setName(u.global_name || u.username || CONFIG.fallbackName);
+  if (u.avatar) $('ava').src = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${u.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`;
+  if (u.username) $('handle').textContent = '@' + u.username;
+  const st = d.discord_status || 'offline';
+  $('dot').className = 'dot s-' + st;
+  $('statusText').textContent = LABEL[st] + (d._demo ? ' (demo)' : '');
+  const acts = d.activities || [];
+  const c = acts.find(a => a.type === 4);
+  $('custom').textContent = c ? [c.emoji && c.emoji.name, c.state].filter(Boolean).join(' ') : '';
+  const sp = d.listening_to_spotify ? d.spotify : null;
+  const g = acts.find(a => a.type !== 4 && a.type !== 2);
+  let verb, title, sub = '', art = null;
+  if (sp) { verb = 'Listening to Spotify'; title = sp.song; sub = sp.artist; art = sp.album_art_url; }
+  else if (g) { verb = ({ 1: 'Streaming', 3: 'Watching', 5: 'Competing in' })[g.type] || 'Playing'; title = g.name; sub = [g.details, g.state].filter(Boolean).join(' · '); }
+  else { verb = 'Right now'; title = 'Lost in the void'; sub = st === 'offline' ? 'Offline. Come back later.' : 'Not doing anything'; }
+  $('nowVerb').textContent = verb; $('nowTitle').textContent = title; $('nowSub').textContent = sub;
+  $('art').hidden = !art; if (art) $('art').src = art;
+  $('bar').hidden = !sp;
+  tick();
+}
+function tick() {
+  if (!S) return;
+  const now = Date.now(), sp = S.listening_to_spotify ? S.spotify : null;
+  const g = (S.activities || []).find(a => a.type !== 4 && a.type !== 2);
+  if (sp && sp.timestamps) {
+    const { start, end } = sp.timestamps, p = Math.min(1, (now - start) / (end - start));
+    $('barFill').style.width = p * 100 + '%';
+    $('nowTime').textContent = `${fmt(now - start)} / ${fmt(end - start)}`;
+  } else if (g && g.timestamps && g.timestamps.start) $('nowTime').textContent = fmt(now - g.timestamps.start) + ' elapsed';
+  else $('nowTime').textContent = '';
+}
+setInterval(tick, 1000);
+
+function connect(id) {
+  fetch(`https://api.lanyard.rest/v1/users/${id}`).then(r => r.json()).then(j => j.success && render(j.data)).catch(() => {});
+  let hb; const ws = new WebSocket('wss://api.lanyard.rest/socket');
+  ws.onmessage = ({ data }) => {
+    const m = JSON.parse(data);
+    if (m.op === 1) { hb = setInterval(() => ws.send(JSON.stringify({ op: 3 })), m.d.heartbeat_interval); ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: id } })); }
+    if (m.op === 0) render(m.d);
+  };
+  ws.onclose = () => { clearInterval(hb); setTimeout(() => connect(id), 5000); };
+}
+if (CONFIG.discordId) {
+  connect(CONFIG.discordId);
+  const dc = CONFIG.socials.find(s => s.icon === 'discord'); if (dc && dc.url === '#') $('socials').querySelector('a').href = `https://discord.com/users/${CONFIG.discordId}`;
+} else {
+  render({ _demo: true, discord_status: 'online', discord_user: {}, activities: [
+    { type: 4, state: 'dont swat me', emoji: { name: '🩸' } },
+    { type: 0, name: 'Valorant', details: 'Competitive', state: 'In a match', timestamps: { start: Date.now() - 3723000 } }] });
+}
+const audio = $('audio'), player = $('player'), playIcon = $('playIcon'), seek = $('seek'), vol = $('vol');
+audio.volume = vol.value;
+const setPlay = on => { playIcon.src = icon(on ? 'pause' : 'play'); player.classList.toggle('on', on); };
+$('playBtn').onclick = () => audio.paused ? audio.play().then(() => setPlay(true)).catch(() => {}) : (audio.pause(), setPlay(false));
+audio.ontimeupdate = () => { $('time').textContent = fmt(audio.currentTime * 1000); if (audio.duration) seek.value = audio.currentTime / audio.duration * 100; };
+seek.oninput = () => { if (audio.duration) audio.currentTime = seek.value / 100 * audio.duration; };
+vol.oninput = () => audio.volume = vol.value;
+$('gate').onclick = () => {
+  $('gate').classList.add('open'); document.body.classList.add('in');
+  audio.play().then(() => setPlay(true)).catch(() => {});
+};
+const ring = document.querySelector('.cursor-ring'), dot = document.querySelector('.cursor-dot');
+let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+addEventListener('pointermove', e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.transform = `translate(${mx}px,${my}px)`;
+  root.style.setProperty('--cx', mx + 'px'); root.style.setProperty('--cy', my + 'px');
+  root.style.setProperty('--dx', (mx / innerWidth * 2 - 1).toFixed(3));
+  root.style.setProperty('--dy', (my / innerHeight * 2 - 1).toFixed(3));
+  const r = nameEl.getBoundingClientRect();
+  nameEl.style.setProperty('--hx', mx - r.left + 'px'); nameEl.style.setProperty('--hy', my - r.top + 'px');
+});
+(function loop() { rx += (mx - rx) * .16; ry += (my - ry) * .16; ring.style.transform = `translate(${rx}px,${ry}px)`; requestAnimationFrame(loop); })();
+document.querySelectorAll('a, button, input').forEach(el => {
+  el.addEventListener('pointerenter', () => ring.classList.add('big'));
+  el.addEventListener('pointerleave', () => ring.classList.remove('big'));
+});
+// กันเมาส์กลางเปิดโหมดเลื่อนอัตโนมัติ และไม่มีเอฟเฟกต์ตอนกด
+addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });
+addEventListener('resize', () => setName(nameEl.dataset.text));
+</script>
+</body>
+</html>
