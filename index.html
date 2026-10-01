@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noai, noimageai">
   <title>VOID</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
@@ -83,7 +84,6 @@ $('socials').innerHTML = CONFIG.socials.map(s =>
   `<a class="tile" href="${s.url}" target="_blank" rel="noopener" title="${s.name}"><img src="https://api.iconify.design/simple-icons:${s.icon}.svg?color=white" alt=""><span>${s.name}</span></a>`).join('');
 const nameEl = $('name');
 function setName(raw) {
-  console.log('Discord name:', raw, [...(raw || '')].map(c => c.codePointAt(0).toString(16)));
   const clean = (raw || '').replace(/[\p{Cf}\u2800]/gu, '').replace(/\s+/g, ' ').trim();
   const n = clean && /^[\x20-\x7E]+$/.test(clean) && /[A-Za-z0-9]/.test(clean) ? clean : CONFIG.fallbackName;
   nameEl.textContent = n; nameEl.dataset.text = n;
