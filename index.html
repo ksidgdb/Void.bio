@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noai, noimageai">
-  <title>VOID</title>
+  <title>bio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="st.css">
@@ -12,15 +12,32 @@
 </head>
 <body>
   <div id="gate"><p>click to enter</p></div>
+  <div id="boot" aria-hidden="true"><pre id="bootLog"></pre></div>
   <div class="bg"></div><div class="halftone"></div><div class="grain"></div>
   <div class="cursor-ring"></div><div class="cursor-dot"></div>
+
+  <div class="topbar reveal" style="--i:0">
+    <button class="ibtn" id="gbBtn" type="button" hidden aria-label="Guestbook" title="Guestbook (G)"><img src="https://api.iconify.design/lucide:book-open.svg?color=white" alt=""></button>
+    <button class="ibtn" id="keysBtn" type="button" aria-label="Keyboard shortcuts" title="Shortcuts (?)"><img src="https://api.iconify.design/lucide:keyboard.svg?color=white" alt=""></button>
+    <div class="visits" id="views" title="Total visits"><span>visitors</span><b id="viewsT">0</b></div>
+  </div>
+
+  <a class="dm" id="dm" data-style="pill" href="#" target="_blank" rel="noopener" title="Send a DM on Discord (D)" aria-label="DM me on Discord">
+    <img src="https://api.iconify.design/simple-icons:discord.svg?color=white" alt=""><span>DM me</span>
+  </a>
 
   <main class="col" id="col">
     <header class="who reveal" style="--i:0">
       <div class="ava"><img id="ava" src="icon.png" alt=""><img class="deco" id="deco" alt="" hidden><i class="dot s-offline" id="dot"></i></div>
       <div class="who-text">
-        <span id="handle">Noting</span>
+        <span class="handle-row">
+          <span id="handle">Noting</span>
+          <button class="mini" id="copyName" type="button" aria-label="Copy name" title="Copy name (C)"><img src="https://api.iconify.design/lucide:copy.svg?color=white" alt=""></button>
+          <button class="mini" id="copyId" type="button" aria-label="Copy Discord ID" title="Copy Discord ID (I)"><img src="https://api.iconify.design/lucide:hash.svg?color=white" alt=""></button>
+        </span>
+        <span class="badges" id="badges"></span>
         <span id="statusText">Connecting</span>
+        <span id="infoText"></span>
         <span id="custom"></span>
       </div>
     </header>
@@ -45,6 +62,7 @@
   </main>
 
   <aside class="player" id="player">
+    <canvas id="viz" aria-hidden="true"></canvas>
     <audio id="audio" loop></audio>
     <button class="play" id="playBtn" type="button" aria-label="Play/Pause"><img id="playIcon" src="https://api.iconify.design/lucide:play.svg?color=white" alt=""></button>
     <div class="track">
@@ -54,6 +72,42 @@
     </div>
     <div class="vol"><img src="https://api.iconify.design/lucide:volume-1.svg?color=white" alt=""><input type="range" id="vol" min="0" max="1" step="0.01" value="0.7"></div>
   </aside>
+
+  <!-- Guestbook -->
+  <div class="modal" id="gbModal" role="dialog" aria-modal="true" aria-label="Guestbook" hidden>
+    <div class="box">
+      <h2>Guestbook</h2>
+      <p class="hint">Leave a message. It goes straight to Void on Discord.</p>
+      <input type="text" id="gbName" maxlength="24" placeholder="Name (optional)" autocomplete="off">
+      <textarea id="gbMsg" maxlength="300" rows="4" placeholder="Write your message"></textarea>
+      <input type="text" id="gbHp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="row"><span id="gbCount">0/300</span><button class="pill" id="gbSend" type="button">Send</button><button class="pill" id="gbClose" type="button">Close</button></div>
+      <p id="gbStatus" role="status"></p>
+    </div>
+  </div>
+
+  <!-- Keyboard shortcuts -->
+  <div class="modal" id="keysModal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" hidden>
+    <div class="box">
+      <h2>Keys</h2>
+      <p class="hint">Shortcuts work anywhere on the page.</p>
+      <div class="keys">
+        <kbd>Space</kbd><span>Play / pause</span>
+        <kbd>M</kbd><span>Mute</span>
+        <kbd>↑ ↓</kbd><span>Volume</span>
+        <kbd>← →</kbd><span>Seek 5 seconds</span>
+        <kbd>C</kbd><span>Copy name</span>
+        <kbd>I</kbd><span>Copy Discord ID</span>
+        <kbd>D</kbd><span>DM me on Discord</span>
+        <kbd>G</kbd><span>Open guestbook</span>
+        <kbd>?</kbd><span>This list</span>
+        <kbd>Esc</kbd><span>Close</span>
+      </div>
+      <div class="row"><button class="pill" id="keysClose" type="button">Close</button></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
 
 <script>
 const CONFIG = {
@@ -67,8 +121,10 @@ const CONFIG = {
     artist: 'from me'
   },
 
+  counter: { namespace: 'void-bio-ksidgdb', key: 'visits' },
+  guestbook: { webhook: 'https://discord.com/api/webhooks/1556963168155082785/fPjZJckOliDwckaUBbCVwAldzkj4Lhr9PNbvAt6HUdcR_-ru4fG2rosY0chXLQqJIWnL', cooldownSec: 60 },
+
   socials: [
-    { name: 'Discord',   icon: 'discord',   url: '#' },
     { name: 'TikTok',    icon: 'tiktok',    url: 'https://www.tiktok.com/@userpfur76ibyy' },
     { name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/w.v01d/?__pwa=1' },
     { name: 'Roblox',    icon: 'roblox',    url: 'https://www.roblox.com/th/users/5804038315/profile' },
@@ -79,6 +135,7 @@ const CONFIG = {
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const icon = n => `https://api.iconify.design/lucide:${n}.svg?color=white`;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(m).padStart(2, '0')}:${x}` : `${m}:${x}`; };
 $('socials').innerHTML = CONFIG.socials.map(s =>
   `<a class="tile" href="${s.url}" target="_blank" rel="noopener" title="${s.name}"><img src="https://api.iconify.design/simple-icons:${s.icon}.svg?color=white" alt=""><span>${s.name}</span></a>`).join('');
@@ -91,12 +148,73 @@ function setName(raw) {
   nameEl.style.setProperty('--fs', Math.max(44, Math.min(132, w / (n.length * .5))) + 'px');
 }
 setName(CONFIG.fallbackName);
+
+/* ---------- Toast ---------- */
+let toastT;
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1700);
+}
+
+/* ---------- Discord ---------- */
 let S = null;
 const LABEL = { online: 'Online', idle: 'Idle', dnd: 'Do not disturb', offline: 'Offline' };
+const FLAGS = [   // [bit, name, icon hash on cdn.discordapp.com/badge-icons]
+  [1, 'Discord Staff', '5e74e9b61934fc1f67c65515d1f7e60d'], [2, 'Partner', '3f9748e53446a137a052f3454e2de41e'],
+  [4, 'HypeSquad Events', 'bf01d1073931f921909045f3a39fd264'], [8, 'Bug Hunter', '2717692c7dca7289b35297368a940dd0'],
+  [64, 'HypeSquad Bravery', '8a88d63823d8a71cd5e390baa45efa02'], [128, 'HypeSquad Brilliance', '011940fd013da3f7fb926e4a1cd2e618'],
+  [256, 'HypeSquad Balance', '3aa41de486fa12454c3761e8e223442e'], [512, 'Early Supporter', '7060786766c9c840eb3019e725d2b358'],
+  [16384, 'Bug Hunter Gold', '848f79194d4be5ff5f81505cbd0ce1e6'], [131072, 'Verified Bot Developer', '6df5892e0f35b051f8b61eace34f4967'],
+  [4194304, 'Active Developer', '6bdc42827a38498929a4920da12695d9']
+];
+function textPill(t) { const s = document.createElement('span'); s.className = 'gtag'; s.textContent = t; return s; }
+function renderBadges(u) {
+  const box = $('badges'); box.textContent = '';
+  const g = u.primary_guild;
+  if (g && g.tag && g.identity_enabled !== false) {
+    const tag = document.createElement('span'); tag.className = 'gtag'; tag.title = 'Server tag';
+    if (g.badge && g.identity_guild_id) {
+      const im = document.createElement('img'); im.alt = '';
+      const urls = [`https://cdn.discordapp.com/guild-tag-badges/${g.identity_guild_id}/${g.badge}.png?size=64`,
+                    `https://cdn.discordapp.com/clan-badges/${g.identity_guild_id}/${g.badge}.png?size=64`];
+      let i = 0; im.onerror = () => { if (++i < urls.length) im.src = urls[i]; else im.remove(); };
+      im.src = urls[0]; tag.appendChild(im);
+    }
+    tag.appendChild(document.createTextNode(g.tag)); box.appendChild(tag);
+  }
+  FLAGS.forEach(f => {
+    if (!((u.public_flags || 0) & f[0])) return;
+    const im = document.createElement('img'); im.className = 'bdg'; im.alt = f[1]; im.title = f[1];
+    im.onerror = () => im.replaceWith(textPill(f[1]));
+    im.src = `https://cdn.discordapp.com/badge-icons/${f[2]}.png`; box.appendChild(im);
+  });
+}
+function assetUrl(app, img) {
+  if (!img) return null;
+  if (img.startsWith('mp:')) return `https://media.discordapp.net/${img.slice(3)}`;
+  if (/^https?:/.test(img)) return img;
+  return app ? `https://cdn.discordapp.com/app-assets/${app}/${img}.png` : null;
+}
+function renderInfo(d) {
+  const u = d.discord_user || {};
+  const dev = [['active_on_discord_desktop', 'Desktop'], ['active_on_discord_mobile', 'Mobile'],
+               ['active_on_discord_web', 'Web'], ['active_on_discord_embedded', 'Console']].filter(x => d[x[0]]).map(x => x[1]).join(', ');
+  let joined = '';
+  if (u.id) {
+    try { joined = 'Joined ' + new Date(Number((BigInt(u.id) >> 22n) + 1420070400000n)).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }); } catch (e) {}
+  }
+  $('infoText').textContent = [dev, joined].filter(Boolean).join(' · ');
+  renderBadges(u);
+}
 function render(d) {
   S = d;
   const u = d.discord_user || {};
   setName(u.global_name || u.username || CONFIG.fallbackName);
+  if (u.id && u.avatar) {
+    const avatarUrl = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.${u.avatar.startsWith('a_') ? 'gif' : 'png'}?size=256`;
+    const avatarEl = $('ava');
+    if (avatarEl) avatarEl.src = avatarUrl;
+  }
   const dec = u.avatar_decoration_data;
   $('deco').hidden = !dec;
   if (dec) $('deco').src = `https://cdn.discordapp.com/avatar-decoration-presets/${dec.asset}.png?size=240`;
@@ -113,11 +231,16 @@ function render(d) {
   const g = acts.find(a => a.type !== 4 && a.type !== 2);
   let verb, title, sub = '', art = null;
   if (sp) { verb = 'Listening to Spotify'; title = sp.song; sub = sp.artist; art = sp.album_art_url; }
-  else if (g) { verb = ({ 1: 'Streaming', 3: 'Watching', 5: 'Competing in' })[g.type] || 'Playing'; title = g.name; sub = [g.details, g.state].filter(Boolean).join(' · '); }
+  else if (g) {
+    verb = ({ 1: 'Streaming', 3: 'Watching', 5: 'Competing in' })[g.type] || 'Playing'; title = g.name;
+    sub = [g.details, g.state].filter(Boolean).join(' · ');
+    art = assetUrl(g.application_id, g.assets && g.assets.large_image);
+  }
   else { verb = 'Right now'; title = 'Lost in the void'; sub = st === 'offline' ? 'Offline. Come back later.' : 'Not doing anything'; }
   $('nowVerb').textContent = verb; $('nowTitle').textContent = title; $('nowSub').textContent = sub;
   $('art').hidden = !art; if (art) $('art').src = art;
   $('bar').hidden = !sp;
+  renderInfo(d);
   tick();
 }
 function tick() {
@@ -152,18 +275,197 @@ if (CONFIG.discordId) {
     { type: 0, name: 'Valorant', details: 'Competitive', state: 'In a match', timestamps: { start: Date.now() - 3723000 } }] });
 }
 
+/* ---------- DM button ---------- */
+const dmUrl = CONFIG.discordId ? `https://discord.com/users/${CONFIG.discordId}` : '';
+if (dmUrl) $('dm').href = dmUrl; else $('dm').hidden = true;
+
+/* ---------- Copy name / ID ---------- */
+async function copyText(text, label) {
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) {
+    const t = document.createElement('textarea'); t.value = text; t.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(t); t.select(); try { document.execCommand('copy'); } catch (_) {} t.remove();
+  }
+  toast(label + ' copied');
+}
+const userName = () => (S && S.discord_user && S.discord_user.username) || CONFIG.fallbackName;
+const copyName = () => copyText(userName(), 'Name');
+const copyId = () => CONFIG.discordId ? copyText(CONFIG.discordId, 'Discord ID') : toast('No Discord ID set');
+$('copyName').onclick = copyName;
+$('copyId').onclick = copyId;
+
+/* ---------- Music ---------- */
 const M = CONFIG.music;
 const audio = $('audio'), player = $('player'), playIcon = $('playIcon'), seek = $('seek'), vol = $('vol');
 const setPlay = on => { playIcon.src = icon(on ? 'pause' : 'play'); player.classList.toggle('on', on); };
-const playNow = () => audio.play().then(() => setPlay(true)).catch(() => {});
+const playNow = () => { if (actx && actx.state === 'suspended') actx.resume(); return audio.play().then(() => setPlay(true)).catch(() => {}); };
+const togglePlay = () => audio.paused ? playNow() : (audio.pause(), setPlay(false));
 audio.src = M.file; audio.volume = vol.value;
 $('trackTitle').textContent = M.title; $('trackArtist').textContent = M.artist;
-$('playBtn').onclick = () => audio.paused ? playNow() : (audio.pause(), setPlay(false));
+$('playBtn').onclick = togglePlay;
 audio.ontimeupdate = () => { $('time').textContent = fmt(audio.currentTime * 1000); if (audio.duration) seek.value = audio.currentTime / audio.duration * 100; };
 seek.oninput = () => { if (audio.duration) audio.currentTime = seek.value / 100 * audio.duration; };
 vol.oninput = () => audio.volume = vol.value;
-$('gate').onclick = () => { $('gate').classList.add('open'); document.body.classList.add('in'); playNow(); };
+[seek, vol].forEach(el => el.addEventListener('pointerup', () => el.blur()));   // so hotkeys keep working after dragging
 
+/* ---------- Audio visualizer ---------- */
+let actx = null, analyser = null, vdata = null, fakeT = 0;
+const viz = $('viz'), vctx = viz.getContext('2d'), BARS = 28, lv = new Array(BARS).fill(0);
+function initViz() {
+  // Real analysis only works over http(s). On file:// the browser would mute the audio, so we fake the bars there.
+  if (actx || !/^https?:$/.test(location.protocol)) return;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    actx = new AC();
+    const src = actx.createMediaElementSource(audio);
+    analyser = actx.createAnalyser(); analyser.fftSize = 128; analyser.smoothingTimeConstant = .8;
+    vdata = new Uint8Array(analyser.frequencyBinCount);
+    src.connect(analyser); analyser.connect(actx.destination);
+  } catch (e) { actx = analyser = null; }
+}
+function drawViz() {
+  const w = viz.clientWidth, h = viz.clientHeight, dpr = window.devicePixelRatio || 1;
+  if (viz.width !== Math.round(w * dpr) || viz.height !== Math.round(h * dpr)) { viz.width = Math.round(w * dpr); viz.height = Math.round(h * dpr); }
+  vctx.setTransform(dpr, 0, 0, dpr, 0, 0); vctx.clearRect(0, 0, w, h);
+  const playing = !audio.paused;
+  if (playing && analyser) analyser.getByteFrequencyData(vdata);
+  fakeT += .05;
+  for (let i = 0; i < BARS; i++) {
+    let target = 0;
+    if (playing) target = analyser ? vdata[Math.floor(i * vdata.length * .75 / BARS)] / 255
+      : (Math.sin(fakeT * 1.7 + i * .6) * .5 + .5) * (Math.sin(fakeT * .7 + i * 1.3) * .3 + .7);
+    lv[i] += (target - lv[i]) * (target > lv[i] ? .5 : .12);
+  }
+  const bw = w / BARS; vctx.fillStyle = '#fff';
+  for (let i = 0; i < BARS; i++) { const bh = Math.max(1, lv[i] * h * .9); vctx.fillRect(i * bw + 1, h - bh, bw - 2, bh); }
+  requestAnimationFrame(drawViz);
+}
+drawViz();
+
+/* ---------- Visit counter ---------- */
+let viewsN = null, viewsShown = false, viewsGo = false;
+function showViews() {
+  if (viewsN == null || !viewsGo || viewsShown) return;
+  viewsShown = true;
+  const out = $('viewsT'), pad = v => String(v);
+  if (viewsN < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) { out.textContent = pad(viewsN); return; }
+  const t0 = performance.now();
+  (function f(t) { const p = Math.min(1, (t - t0) / 900); out.textContent = pad(Math.round(viewsN * (1 - Math.pow(1 - p, 3)))); if (p < 1) requestAnimationFrame(f); })(t0);
+}
+(async function counter() {
+  const C = CONFIG.counter; if (!C) { $('views').hidden = true; return; }
+  const local = ['localhost', '127.0.0.1', ''].includes(location.hostname);   // your own testing is not counted
+  const today = new Date().toISOString().slice(0, 10);                          // one visit per browser per day
+  let last = null; try { last = localStorage.getItem('voidCounted'); } catch (e) {}
+  const up = !local && last !== today;
+  const base = `https://api.counterapi.dev/v1/${C.namespace}/${C.key}`;
+  try {
+    const r = await fetch(up ? base + '/up' : base + '/');
+    if (r.status === 404) viewsN = 0;                                           // counter not created yet
+    else if (!r.ok) { if (local) viewsN = 0; else throw 0; }
+    if (r.ok) { const j = await r.json(); viewsN = Number(j.count != null ? j.count : j.value) || 0; }
+    if (up) { try { localStorage.setItem('voidCounted', today); } catch (e) {} }
+    showViews();
+  } catch (e) { if (local) { viewsN = 0; showViews(); } else $('viewsT').textContent = 'n/a'; }
+})();
+
+/* ---------- Modals + guestbook ---------- */
+const modals = ['gbModal', 'keysModal'];
+const anyModal = () => modals.some(id => !$(id).hidden);
+function openModal(id) { modals.forEach(m => $(m).hidden = m !== id); if (id === 'gbModal') setTimeout(() => $('gbMsg').focus(), 30); }
+function closeModals() { modals.forEach(m => $(m).hidden = true); }
+modals.forEach(id => $(id).addEventListener('pointerdown', e => { if (e.target === $(id)) closeModals(); }));
+$('keysBtn').onclick = () => openModal('keysModal');
+$('keysClose').onclick = closeModals;
+$('gbClose').onclick = closeModals;
+
+const GB = CONFIG.guestbook || {};
+const gbOn = !!GB.webhook;
+$('gbBtn').hidden = !gbOn;
+$('gbBtn').onclick = () => openModal('gbModal');
+$('gbMsg').oninput = () => $('gbCount').textContent = $('gbMsg').value.length + '/300';
+$('gbSend').onclick = async () => {
+  const st = $('gbStatus'), msg = $('gbMsg').value.trim(), name = $('gbName').value.trim() || 'anonymous';
+  if (!msg) { st.textContent = 'Write a message first.'; return; }
+  if ($('gbHp').value) { closeModals(); return; }   // honeypot: bots fill hidden fields
+  let last = 0; try { last = +localStorage.getItem('gbLast') || 0; } catch (e) {}
+  const wait = Math.ceil((last + GB.cooldownSec * 1000 - Date.now()) / 1000);
+  if (wait > 0) { st.textContent = `Wait ${wait}s before sending another.`; return; }
+  $('gbSend').disabled = true; st.textContent = 'Sending...';
+  try {
+    const r = await fetch(GB.webhook, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'Guestbook', allowed_mentions: { parse: [] },
+        content: `**${name.slice(0, 24)}**\n${msg.slice(0, 300)}` })
+    });
+    if (!r.ok) throw 0;
+    try { localStorage.setItem('gbLast', String(Date.now())); } catch (e) {}
+    $('gbMsg').value = ''; $('gbCount').textContent = '0/300'; st.textContent = '';
+    closeModals(); toast('Message sent');
+  } catch (e) { st.textContent = 'Could not send. Try again later.'; }
+  $('gbSend').disabled = false;
+};
+
+/* ---------- Enter: click -> boot sequence -> page ---------- */
+const BOOT = [
+  '> void.os 1.0',
+  () => row('mounting wallpaper', 'ok'),
+  () => row('tuning audio', audio.paused ? 'muted' : 'ok'),
+  () => row('linking discord', S ? 'ok' : 'offline'),
+  () => row('counting visitors', 'ok'),
+  '> access granted'
+];
+const row = (label, res) => '> ' + (label + ' ').padEnd(26, '.') + ' ' + res;
+let entered = false, bootDone = false;
+function finishBoot() { if (bootDone) return; bootDone = true; $('boot').classList.add('done'); document.body.classList.add('in'); viewsGo = true; setTimeout(showViews, 500); }
+async function runBoot() {
+  const log = $('bootLog'), wait = ms => new Promise(r => setTimeout(r, ms));
+  const fast = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  for (const l of BOOT) {
+    const text = typeof l === 'function' ? l() : l;
+    for (const ch of text + '\n') { if (bootDone) return; log.textContent += ch; if (!fast) await wait(ch === '\n' ? 110 : 7); }
+  }
+  if (!fast) await wait(350);
+  finishBoot();
+}
+function enter() {
+  if (entered) return; entered = true;
+  $('gate').classList.add('open');
+  initViz(); playNow();
+  runBoot();
+}
+$('gate').onclick = enter;
+$('boot').onclick = finishBoot;
+
+/* ---------- Hotkeys ---------- */
+addEventListener('keydown', e => {
+  if (!entered) { if (e.key === 'Enter') enter(); return; }
+  if (!bootDone) { finishBoot(); return; }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target, typing = t.matches && t.matches('input, textarea');
+  if (e.key === 'Escape') { closeModals(); return; }
+  if (typing || anyModal()) return;
+  const k = e.key.toLowerCase();
+  if (e.key === ' ' && t.closest && t.closest('button, a')) return;   // keyboard user is on a control
+  if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+  else if (k === 'm') { audio.muted = !audio.muted; toast(audio.muted ? 'Muted' : 'Unmuted'); }
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    audio.volume = Math.min(1, Math.max(0, +(audio.volume + (e.key === 'ArrowUp' ? .05 : -.05)).toFixed(2)));
+    vol.value = audio.volume; toast('Volume ' + Math.round(audio.volume * 100) + '%');
+  }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    if (audio.duration) { audio.currentTime = Math.min(audio.duration, Math.max(0, audio.currentTime + (e.key === 'ArrowRight' ? 5 : -5))); }
+  }
+  else if (k === 'd' && dmUrl) window.open(dmUrl, '_blank', 'noopener');
+  else if (k === 'c') copyName();
+  else if (k === 'i') copyId();
+  else if (k === 'g' && gbOn) openModal('gbModal');
+  else if (e.key === '?') openModal('keysModal');
+});
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (b && e.detail) b.blur(); });
+
+/* ---------- Cursor ---------- */
 const ring = document.querySelector('.cursor-ring'), dot = document.querySelector('.cursor-dot');
 let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
 addEventListener('pointermove', e => {
@@ -176,10 +478,7 @@ addEventListener('pointermove', e => {
   nameEl.style.setProperty('--hx', mx - r.left + 'px'); nameEl.style.setProperty('--hy', my - r.top + 'px');
 });
 (function loop() { rx += (mx - rx) * .16; ry += (my - ry) * .16; ring.style.transform = `translate(${rx}px,${ry}px)`; requestAnimationFrame(loop); })();
-document.querySelectorAll('a, button, input').forEach(el => {
-  el.addEventListener('pointerenter', () => ring.classList.add('big'));
-  el.addEventListener('pointerleave', () => ring.classList.remove('big'));
-});
+document.addEventListener('pointerover', e => ring.classList.toggle('big', !!(e.target.closest && e.target.closest('a, button, input, textarea'))));
 addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });
 addEventListener('resize', () => setName(nameEl.dataset.text));
 </script>

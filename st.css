@@ -163,3 +163,166 @@ input[type=range]::-moz-range-thumb { width: 10px; height: 10px; border: 0; back
   .player { left: 12px; right: 12px; width: auto; }
   .socials { grid-template-columns: repeat(5, 1fr); gap: 6px; }
 }
+
+/* =====================================================
+   v2 additions: boot, visualizer, tools, modals, toast
+   ===================================================== */
+
+/* ---------- Boot sequence ---------- */
+#boot {
+  position: fixed; inset: 0; z-index: 90; background: #000;
+  display: flex; align-items: center; padding: 0 clamp(24px, 7vw, 120px);
+  transition: opacity .6s, visibility .6s;
+}
+#boot.done { opacity: 0; visibility: hidden; }
+#boot pre {
+  margin: 0; white-space: pre-wrap; color: #fff;
+  font: 500 clamp(12px, 1.7vw, 15px)/1.9 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+#boot pre::after { content: "\2588"; margin-left: 2px; animation: blink 1s steps(2) infinite; }
+#boot::after { content: "click to skip"; position: absolute; right: 24px; bottom: 20px; font-size: 11px; color: rgba(255,255,255,.4); }
+
+/* ---------- Audio visualizer (sits behind the player, layout unchanged) ---------- */
+.player > :not(#viz) { position: relative; }
+#viz { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .22; pointer-events: none; }
+
+/* ---------- Top bar: visitor counter + guestbook + keys ---------- */
+.topbar { position: fixed; top: 20px; right: 20px; z-index: 60; display: flex; align-items: stretch; gap: 10px; }
+.visits { display: flex; flex-direction: column; justify-content: center; gap: 3px; min-width: 112px; padding: 6px 14px; background: #000; border: 2px solid #fff; box-shadow: 4px 4px 0 #fff; }
+.visits span { font-size: 10px; color: rgba(255,255,255,.55); }
+.visits b { font: 400 22px/1 'Anton', Impact, sans-serif; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+.ibtn { width: 46px; display: grid; place-items: center; padding: 0; color: #fff; background: #000; border: 1.5px solid rgba(255,255,255,.55); transition: transform .15s, box-shadow .15s, background .15s; }
+.ibtn img { width: 18px; height: 18px; }
+.ibtn:hover { background: #fff; transform: translate(-3px, -3px); box-shadow: 3px 3px 0 #fff; border-color: #fff; }
+.ibtn:hover img { filter: invert(1); }
+.ibtn[hidden] { display: none; }
+
+/* ---------- Header extras: copy buttons + Discord details ---------- */
+.handle-row { display: flex; align-items: center; gap: 6px; }
+.mini { width: 22px; height: 22px; display: grid; place-items: center; padding: 0; color: #fff; background: none; border: 1px solid rgba(255,255,255,.4); border-radius: 50%; transition: background .15s; }
+.mini img { width: 11px; height: 11px; }
+.mini:hover { background: #fff; } .mini:hover img { filter: invert(1); }
+#infoText { color: rgba(255,255,255,.5); font-size: 11px; }
+#infoText:empty { display: none; }
+@media (max-width: 820px) { .col { padding-top: 84px; } .topbar { top: 12px; right: 12px; } }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 28px; z-index: 96; translate: -50% 12px; opacity: 0; pointer-events: none;
+  padding: 9px 16px; background: #fff; color: #000; font: 700 12px/1 'Space Grotesk', sans-serif;
+  box-shadow: 4px 4px 0 rgba(255,255,255,.35); transition: opacity .2s, translate .2s;
+}
+.toast.show { opacity: 1; translate: -50% 0; }
+
+/* ---------- Modals (guestbook, keys) ---------- */
+.modal { position: fixed; inset: 0; z-index: 95; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.82); backdrop-filter: blur(4px); }
+.modal[hidden] { display: none; }
+.box { width: min(420px, 100%); padding: 20px; background: #000; border: 2px solid #fff; box-shadow: 6px 6px 0 #fff; }
+.box h2 { margin: 0 0 4px; font: 400 28px/1 'Anton', Impact, sans-serif; letter-spacing: .03em; }
+.box .hint { margin: 0 0 14px; font-size: 12px; color: rgba(255,255,255,.65); }
+.box input[type=text], .box textarea {
+  display: block; width: 100%; margin-bottom: 10px; padding: 10px 12px; resize: none;
+  font: 500 13px/1.4 'Space Grotesk', 'Sarabun', sans-serif; color: #fff; background: rgba(255,255,255,.06);
+  border: 1.5px solid rgba(255,255,255,.55); border-radius: 0; outline: none;
+  -webkit-user-select: text; user-select: text;
+}
+.box input[type=text]:focus, .box textarea:focus { border-color: #fff; background: rgba(255,255,255,.12); }
+.box .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.box .row { display: flex; align-items: center; gap: 10px; }
+.box .row span { margin-right: auto; font-size: 11px; color: rgba(255,255,255,.55); }
+#gbStatus { min-height: 16px; margin: 10px 0 0; font-size: 12px; color: rgba(255,255,255,.8); }
+.keys { display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin: 0 0 16px; font-size: 13px; }
+.keys kbd { justify-self: start; min-width: 26px; padding: 3px 8px; text-align: center; font: 700 11px/1.3 'Space Grotesk', sans-serif; border: 1.5px solid #fff; box-shadow: 2px 2px 0 #fff; }
+.keys span { color: rgba(255,255,255,.8); }
+
+/* the custom cursor replaces the system one everywhere, including inside modals */
+@media (hover: hover) and (pointer: fine) { body *, .modal, textarea { cursor: none; } }
+@media (prefers-reduced-motion: reduce) { #boot pre::after { animation: none; } }
+
+
+/* ---------- Server tag + profile badges ---------- */
+.badges { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 2px 0; }
+.badges:empty { display: none; }
+.gtag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 5px; font: 700 11px/1.3 'Space Grotesk', sans-serif; color: #fff; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.4); border-radius: 6px; }
+.gtag img { width: 14px; height: 14px; }
+.bdg { width: 18px; height: 18px; }
+/* =====================================================================
+   dm.css : DM button only
+   Pick a look with data-style on the button in index.html:
+     <a class="dm" id="dm" data-style="block"> ... </a>
+   Styles: block | shadow | pill | sticker | bubble | circle
+   The button appears together with the rest of the page (body.in),
+   right after the intro. The class "show" forces it visible (used by dm-preview.html).
+   ===================================================================== */
+
+/* ---------- Shared base (hidden until the page appears) ---------- */
+.dm {
+  --dm-gap: 20px;
+  position: fixed; left: var(--dm-gap); bottom: var(--dm-gap); z-index: 60;
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: #fff;
+  font: 400 24px/1 'Anton', Impact, sans-serif; letter-spacing: .06em;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: translate .15s, scale .15s, rotate .15s, background .15s, color .15s, box-shadow .15s;
+}
+.dm img { width: 22px; height: 22px; flex-shrink: 0; transition: filter .15s; }
+.dm.show, body.in .dm { opacity: 1; visibility: visible; pointer-events: auto; animation: dm-pop .45s cubic-bezier(.2, .9, .3, 1.2) backwards; }
+body.in .dm { animation-delay: .7s; }   /* lands with the last of the staggered page elements */
+@keyframes dm-pop { from { opacity: 0; transform: translateY(18px) scale(.85); } to { opacity: 1; transform: none; } }
+
+/* ---------- 1. block : solid white slab with an offset frame ---------- */
+.dm[data-style="block"] { padding: 13px 20px; color: #000; background: #fff; outline: 2px solid #fff; outline-offset: 4px; }
+.dm[data-style="block"] img { filter: invert(1); }
+.dm[data-style="block"]:hover { color: #fff; background: #000; translate: -3px -3px; }
+.dm[data-style="block"]:hover img { filter: none; }
+
+/* ---------- 2. shadow : black box, hard white shadow (matches the music player) ---------- */
+.dm[data-style="shadow"] { padding: 12px 20px; background: #000; border: 2px solid #fff; box-shadow: 5px 5px 0 #fff; }
+.dm[data-style="shadow"]:hover { color: #000; background: #fff; translate: -3px -3px; box-shadow: 8px 8px 0 #fff; }
+.dm[data-style="shadow"]:hover img { filter: invert(1); }
+
+/* ---------- 3. pill : glass capsule with a live dot ---------- */
+.dm[data-style="pill"] {
+  padding: 12px 20px 12px 16px; border-radius: 999px; font: 700 14px/1 'Space Grotesk', sans-serif; letter-spacing: 0;
+  background: rgba(0, 0, 0, .7); border: 1.5px solid rgba(255, 255, 255, .55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.dm[data-style="pill"] img { width: 16px; height: 16px; }
+.dm[data-style="pill"]::after { content: ""; width: 8px; height: 8px; margin-left: 2px; border-radius: 50%; background: #fff; animation: dm-ping 2s infinite; }
+.dm[data-style="pill"]:hover { color: #000; background: #fff; border-color: #fff; }
+.dm[data-style="pill"]:hover img { filter: invert(1); }
+.dm[data-style="pill"]:hover::after { background: #000; }
+@keyframes dm-ping { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); } 100% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); } }
+
+/* ---------- 4. sticker : tilted label, double border ---------- */
+.dm[data-style="sticker"] { padding: 12px 22px; color: #000; background: #fff; border-radius: 4px; rotate: -4deg; box-shadow: 0 0 0 3px #000, 0 0 0 5px #fff; }
+.dm[data-style="sticker"] img { filter: invert(1); }
+.dm[data-style="sticker"]:hover { rotate: 2deg; scale: 1.06; }
+
+/* ---------- 5. bubble : manga speech bubble, same shape language as the bio bubble ---------- */
+.dm[data-style="bubble"] { padding: 12px 22px; color: #000; background: #fff; border-radius: 22px 22px 22px 4px; font: 700 15px/1 'Space Grotesk', sans-serif; letter-spacing: 0; }
+.dm[data-style="bubble"] img { width: 18px; height: 18px; filter: invert(1); }
+.dm[data-style="bubble"]::before { content: ""; position: absolute; left: 18px; bottom: -12px; width: 20px; height: 14px; background: #fff; clip-path: polygon(0 0, 100% 0, 0 100%); transition: background .15s; }
+.dm[data-style="bubble"]:hover { translate: 0 -3px; }
+
+/* ---------- 6. circle : icon only, expands to show the label on hover ---------- */
+.dm[data-style="circle"] { gap: 0; height: 56px; padding: 0 17px; color: #000; background: #fff; border-radius: 999px; animation-name: dm-pop; }
+.dm[data-style="circle"] img { filter: invert(1); width: 22px; height: 22px; }
+.dm[data-style="circle"] span { max-width: 0; overflow: hidden; white-space: nowrap; font-size: 20px; transition: max-width .3s, margin .3s; }
+.dm[data-style="circle"].show, body.in .dm[data-style="circle"] { animation: dm-pop .45s cubic-bezier(.2, .9, .3, 1.2) .7s backwards, dm-ring 2.2s 1.2s infinite; }
+.dm[data-style="circle"]:hover span, .dm[data-style="circle"]:focus-visible span { max-width: 90px; margin: 0 4px 0 10px; }
+@keyframes dm-ring { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, .6); } 100% { box-shadow: 0 0 0 16px rgba(255, 255, 255, 0); } }
+
+/* ---------- pill on very narrow phones: collapse to a round icon so it never crowds the top bar ---------- */
+@media (max-width: 420px) {
+  .dm[data-style="pill"] { padding: 12px; }
+  .dm[data-style="pill"] span { display: none; }
+  .dm[data-style="pill"]::after { margin-left: 0; width: 6px; height: 6px; }
+}
+
+/* ---------- Keyboard focus, mobile, reduced motion ---------- */
+.dm:focus-visible { outline: 2px dashed #fff; outline-offset: 7px; }
+@media (max-width: 820px) {   /* bottom is taken by the music player, so go top-left */
+  .dm { --dm-gap: 16px; bottom: auto; top: var(--dm-gap); font-size: 18px; }
+  .dm img { width: 18px; height: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { .dm, .dm::before, .dm::after { animation: none !important; } }
