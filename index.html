@@ -121,7 +121,7 @@ const CONFIG = {
     artist: 'from me'
   },
 
-  counter: { namespace: 'void-bio-ksidgdb', key: 'visits' },
+  counter: { namespace: 'void-bio-ksidgdb', key: 'visits' },   // Abacus (3-64 chars: letters, numbers, - _ .)
   guestbook: { webhook: 'https://discord.com/api/webhooks/1556963168155082785/fPjZJckOliDwckaUBbCVwAldzkj4Lhr9PNbvAt6HUdcR_-ru4fG2rosY0chXLQqJIWnL', cooldownSec: 60 },
 
   socials: [
@@ -358,12 +358,12 @@ function showViews() {
   const today = new Date().toISOString().slice(0, 10);                          // one visit per browser per day
   let last = null; try { last = localStorage.getItem('voidCounted'); } catch (e) {}
   const up = !local && last !== today;
-  const base = `https://api.counterapi.dev/v1/${C.namespace}/${C.key}`;
+  const base = 'https://abacus.jasoncameron.dev', path = `${C.namespace}/${C.key}`;   // Abacus: free, no key
   try {
-    const r = await fetch(up ? base + '/up' : base + '/');
+    const r = await fetch(`${base}/${up ? 'hit' : 'get'}/${path}`);          // hit = +1, get = just read
     if (r.status === 404) viewsN = 0;                                           // counter not created yet
     else if (!r.ok) { if (local) viewsN = 0; else throw 0; }
-    if (r.ok) { const j = await r.json(); viewsN = Number(j.count != null ? j.count : j.value) || 0; }
+    if (r.ok) { const j = await r.json(); viewsN = Number(j.value) || 0; }
     if (up) { try { localStorage.setItem('voidCounted', today); } catch (e) {} }
     showViews();
   } catch (e) { if (local) { viewsN = 0; showViews(); } else $('viewsT').textContent = 'n/a'; }
